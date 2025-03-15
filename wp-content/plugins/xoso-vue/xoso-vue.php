@@ -17,10 +17,11 @@ if (!defined('ABSPATH')) {
 // Định nghĩa đường dẫn plugin
 define('VUE_DEMO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
-include 'api/list-post.php';
-include 'acf/post_metadata.php';
+require_once 'api/list-post.php';
+require_once 'acf/post_metadata.php';
 require_once 'cawldata/admin-menu.php';
 require_once 'cawldata/cronjob.php';
+require_once 'acf/setup.php';
 
 // Thêm shortcode để hiển thị Vue app
 function vue_demo_shortcode() {
