@@ -4,7 +4,7 @@ function loto_add_meta_box() {
         'loto_meta_box',
         'Kết Quả Xổ Số',
         'loto_meta_box_callback',
-        'post',
+        'xo_so',
         'normal',
         'high'
     );
@@ -18,6 +18,9 @@ function loto_meta_box_callback($post) {
     }
     $tinh_thanh = get_option('province_config', []);
     
+    // echo '<pre>';
+    // print_r($loto_data);
+
     ?>
 
     <style>
@@ -26,6 +29,7 @@ function loto_meta_box_callback($post) {
         .loto-tab.active { background: #fff; font-weight: bold; border-bottom: none; }
         .loto-content { display: none; padding: 10px; border: 1px solid #ccc; }
         .loto-content.active { display: block; }
+        .loto-content .item{display: flex; justify-content: space-between; padding: .5em 0;}
     </style>
 
     <div class="loto-tabs">
@@ -39,11 +43,20 @@ function loto_meta_box_callback($post) {
     
         foreach ($tinh_list as $key => $title) {
 
-            $ket_qua  = isset( $loto_data[$mien][$key]) ?  $loto_data[$mien][$key] : '';
+            $ket_qua  = isset( $loto_data[$mien][$key]['result']) ? $loto_data[$mien][$key]['result']: '';
 
-            echo '<label><b>' . esc_html($title) . ' - ( '. $key .' ) </b></label>';
-            echo '<input type="text" name="' . $key . '" value="' . esc_html($ket_qua ) .   '" style="width:100%;" />';
-            echo '<br><br>';
+            $ngay = isset(  $loto_data[$mien][$key]['loto_date']  ) ?  $loto_data[$mien][$key]['loto_date']  : ''; 
+            
+            if (!empty($ngay)) {
+                $dateObj = DateTime::createFromFormat('d/m/Y', $ngay);
+                $ngay = $dateObj ? $dateObj->format('Y-m-d') : ''; // Đổi thành YYYY-MM-DD
+            }
+
+            echo '<div class="item">';
+            echo '<label style="width:10%;" ><b>' . esc_html($title) . ' - ( '. $key .' ) </b></label>';
+            echo '<input type="text" name="' . $key . '" value="' . esc_html($ket_qua ) .   '" style="width:70%;" />';
+            echo '<input type="date" name="' . $key . '_date" value="' . ($ngay) . '" class="loto-date" style="width:20%;" readonly  />';
+            echo '</div>';
         }
 
         echo '</div>'; 
@@ -66,29 +79,3 @@ function loto_meta_box_callback($post) {
 }
 
 // Lưu dữ liệu vào Custom Field
-
-function loto_save_meta_box($post_id) {
-    // Kiểm tra quyền và autosave
-    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
-    if (!current_user_can('edit_post', $post_id)) return;
-    
-    $tinh_thanh = get_option('province_config', []);
-
-    $result = [
-        "mien_bac"  => array_keys(!empty($tinh_thanh["mien_bac"]) && is_array($tinh_thanh["mien_bac"]) ? $tinh_thanh["mien_bac"] : []),
-        "mien_trung" => array_keys(!empty($tinh_thanh["mien_trung"]) && is_array($tinh_thanh["mien_trung"]) ? $tinh_thanh["mien_trung"] : []),
-        "mien_nam"   => array_keys(!empty($tinh_thanh["mien_nam"]) && is_array($tinh_thanh["mien_nam"]) ? $tinh_thanh["mien_nam"] : []),
-    ];
-    
-    $loto_data = [];
-    
-    foreach ($result as $mien => $tinh_list) {
-        foreach ($tinh_list as $key) {
-            if (isset($_POST[$key])) {
-                $loto_data[$mien][$key] = sanitize_text_field($_POST[$key]);
-            }
-        }
-    }
-    update_post_meta($post_id, '_loto_data', $loto_data);
-}
-add_action('save_post', 'loto_save_meta_box');

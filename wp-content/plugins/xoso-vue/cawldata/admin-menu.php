@@ -110,7 +110,7 @@ function cawldata_cronjob_page() {
         </div>
 
         <div class="card">
-            <h2 class="title">Lịch sử chạy Cronjob</h2>
+            <h2 class="title">Lịch sử chạy Cronjob </h2>
             <table class="widefat">
                 <thead>
                     <tr>

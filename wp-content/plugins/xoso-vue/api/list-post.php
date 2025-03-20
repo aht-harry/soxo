@@ -6,11 +6,24 @@ function get_latest_posts() {
     $args = array(
         'post_type'      => 'post',
         'posts_per_page' => 1, // Số bài viết muốn lấy
-        'orderby'        => 'date',
+        'orderby'        => 'title',
         'order'          => 'DESC'
     );
+    $date = isset($_GET['date'])? $_GET['date'] : '';
+    
+    if (!empty($date)) {
+        
+        $dateObj = DateTime::createFromFormat('d/m/Y', $date);
+        $date = $dateObj ? $dateObj->format('Y-m-d') : $date; // Đổi thành YYYY-MM-DD
+    
+        $text = 'Kết Quả Xổ Số Ngày ' . $date;
+        
+        $args['s'] = $text; // Tìm bài viết theo tiêu đề
+    }
+    
 
     $query = new WP_Query($args);
+
     $posts = [];
 
     if ($query->have_posts()) {

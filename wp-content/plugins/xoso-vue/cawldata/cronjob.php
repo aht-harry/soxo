@@ -35,7 +35,7 @@ class LotteryCronjobManager {
                         throw new Exception('Failed to fetch data for province: ' . $province);
                     }
 
-                    $this->create_or_update_post($data['t'], $province,$key);
+                    $this->create_or_update_post($data['t'], $province,$key , 0);
                 }
             }
 
@@ -88,49 +88,61 @@ class LotteryCronjobManager {
         return $data;
     }
 
-    private function create_or_update_post($lottery_data, $province, $key) {
-        $current_date = date('Y-m-d');
-        $post_title = 'Kết Quả Xổ Số Ngày ' . $current_date; // Include date in the title
+    private function create_or_update_post($lottery_data, $province, $key , $day = 0) {
 
-        // Check if a post with the same title already exists
-        $existing_posts = get_posts(array(
-            'title' => $post_title,
-            'post_type' => 'post',
-            'post_status' => 'publish',
-            'numberposts' => 1
-        ));
+        $dates = [];
+        for ($i = $day; $i >= 0; $i--) {
+            foreach (array_reverse($lottery_data['issueList'])  as $index => $value) {
 
-        if (!empty($existing_posts)) {
-            // Use the existing post
-            $post_id = $existing_posts[0]->ID;
-        } else {
-            // Create a new post
-            $post_args = array(
-                'post_title'   => $post_title,
-                'post_content' => 'Kết quả xổ số tổng hợp cho ngày ' . $current_date . '.',
-                'post_status'  => 'publish',
-                'post_type'    => 'post',
-            );
+                $current_date = date('Y-m-d', strtotime("-$i days"));
+                
 
-            $post_id = wp_insert_post($post_args);
+                $turnNum = $current_date;
 
-            if (is_wp_error($post_id)) {
-                throw new Exception('Failed to create post for province: ' . $province);
+                $post_title = 'Kết Quả Xổ Số Ngày ' . $turnNum; // Include date in the title
+
+                // Check if a post with the same title already exists
+                $existing_posts = get_posts(array(
+                    'title' => $post_title,
+                    'post_type' => POST_TYPE,
+                    'post_status' => 'publish',
+                    'numberposts' => 1
+                ));
+
+                if (!empty($existing_posts)) {
+                    // Use the existing post
+                    $post_id = $existing_posts[0]->ID;
+                } else {
+                    // Create a new post
+                    $post_args = array(
+                        'post_title'   => $post_title,
+                        'post_content' => 'Kết quả xổ số tổng hợp cho ngày ' . $turnNum . '.',
+                        'post_status'  => 'publish',
+                        'post_type'    => POST_TYPE,
+                    );
+                    $post_id = wp_insert_post($post_args);
+                    sleep(2);
+
+                    if (is_wp_error($post_id)) {
+                        throw new Exception('Failed to create post for province: ' . $province);
+                    }
+                }
+
+                // Organize data into the same structure as in post_metadata.php
+                $loto_data = get_post_meta($post_id, '_loto_data', true);
+                if (!$loto_data) {
+                    $loto_data = [];
+                }
+
+                $loto_data[$key][$province]['result'] = $value['detail'];
+                $loto_data[$key][$province]['loto_date'] = $value['turnNum'];
+
+                update_post_meta($post_id, '_loto_data', $loto_data);
+                
             }
         }
-
-        // Organize data into the same structure as in post_metadata.php
-        $loto_data = get_post_meta($post_id, '_loto_data', true);
-        if (!$loto_data) {
-            $loto_data = [];
-        }
-
-        $loto_data[$key][$province] = $lottery_data['issueList'][0]['detail'];
-
-        update_post_meta($post_id, '_loto_data', $loto_data);
-
+        
     }
-
     public function schedule_daily_cronjob() {
         $time = get_option('cawldata_cron_time', '03:00');
         list($hour, $minute) = explode(':', $time);
