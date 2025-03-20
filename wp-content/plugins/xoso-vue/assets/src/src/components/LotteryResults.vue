@@ -31,6 +31,10 @@ export default {
         DefaultLoader
     },
     props: {
+        loto_date:{
+            type: String,
+            required: true
+        },
         activeRegion: {
             type: String,
             required: true,
@@ -54,6 +58,7 @@ export default {
     },
     computed: {
         parsedPrizes() {
+
             return this.prizes.map((prize, index) => {
                 return {
                     name: (index + 1).toString(),

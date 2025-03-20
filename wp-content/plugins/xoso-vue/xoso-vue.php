@@ -15,10 +15,11 @@ if (!defined('ABSPATH')) {
 
 
 // Định nghĩa đường dẫn plugin
-define('VUE_DEMO_PLUGIN_URL', plugin_dir_url(__FILE__));
 
+require_once 'config.php';
 require_once 'api/list-post.php';
 require_once 'acf/post_metadata.php';
+require_once 'acf/custom_type.php';
 require_once 'cawldata/admin-menu.php';
 require_once 'cawldata/cronjob.php';
 require_once 'acf/setup.php';
@@ -35,7 +36,7 @@ add_shortcode('vue_demo', 'vue_demo_shortcode');
 
 // Load các file Vue khi shortcode được gọi
 function vue_demo_enqueue_scripts() {
-    wp_enqueue_script('vue-app', VUE_DEMO_PLUGIN_URL . 'assets/dist/vue-app.js', [], null, true);
-    wp_enqueue_style('vue-style', VUE_DEMO_PLUGIN_URL . 'assets/dist/vue-style.css');
+    wp_enqueue_script('vue-app', XOSO_PLUGIN_DIR . 'assets/dist/vue-app.js', [], null, true);
+    wp_enqueue_style('vue-style', XOSO_PLUGIN_DIR . 'assets/dist/vue-style.css');
 }
 add_action('wp_enqueue_scripts', 'vue_demo_enqueue_scripts');
