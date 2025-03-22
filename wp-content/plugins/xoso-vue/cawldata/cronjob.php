@@ -35,7 +35,7 @@ class LotteryCronjobManager {
                         throw new Exception('Failed to fetch data for province: ' . $province);
                     }
 
-                    $this->create_or_update_post($data['t'], $province,$key , 0);
+                    $this->create_or_update_post($data['t'], $province,$key , 29);
                 }
             }
 
@@ -53,7 +53,7 @@ class LotteryCronjobManager {
     }
 
     private function make_api_request($province) {
-        $url = 'https://xoso188.net/api/front/open/lottery/history/list/1/' . $province;
+        $url = 'https://xoso188.net/api/front/open/lottery/history/list/30/' . $province;
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -89,10 +89,13 @@ class LotteryCronjobManager {
     }
 
     private function create_or_update_post($lottery_data, $province, $key , $day = 0) {
-
-        $dates = [];
+        
         for ($i = $day; $i >= 0; $i--) {
-            foreach (array_reverse($lottery_data['issueList'])  as $index => $value) {
+
+
+            $masterData = $lottery_data['issueList'][$i];
+
+            // foreach (array_reverse($lottery_data['issueList'])  as $index => $value) {
 
                 $current_date = date('Y-m-d', strtotime("-$i days"));
                 
@@ -134,12 +137,12 @@ class LotteryCronjobManager {
                     $loto_data = [];
                 }
 
-                $loto_data[$key][$province]['result'] = $value['detail'];
-                $loto_data[$key][$province]['loto_date'] = $value['turnNum'];
+                $loto_data[$key][$province]['result'] = $masterData['detail'];
+                $loto_data[$key][$province]['loto_date'] = $masterData['turnNum'];
 
                 update_post_meta($post_id, '_loto_data', $loto_data);
-                
-            }
+                // 
+            // }
         }
         
     }

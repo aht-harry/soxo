@@ -4,7 +4,7 @@ include 'function/get_provinces.php';
 
 function get_latest_posts() {
     $args = array(
-        'post_type'      => 'post',
+        'post_type'      => POST_TYPE,
         'posts_per_page' => 1, // Số bài viết muốn lấy
         'orderby'        => 'title',
         'order'          => 'DESC'
@@ -49,7 +49,7 @@ function get_latest_posts() {
 
 function get_last() {
     $args = array(
-        'post_type'      => 'post',
+        'post_type'      => POST_TYPE,
         'posts_per_page' => 1, // Số bài viết muốn lấy
         'orderby'        => 'date',
         'order'          => 'ASC'
@@ -79,6 +79,33 @@ function get_last() {
     return rest_ensure_response($posts);
 }
 
+function get_prediction() {
+    $args = array(
+        'post_type'      => POST_TYPE,
+        'posts_per_page' => 1,
+        'orderby'        => 'date',
+        'order'          => 'DESC'
+    );
+
+    $query = new WP_Query($args);
+    $posts = [];
+
+    if ($query->have_posts()) {
+        while ($query->have_posts()) {
+            $query->the_post();
+            $post_id = get_the_ID();
+            $posts[] = [
+                'date'      => get_the_date('Y-m-d'),
+                'prediction' => get_post_meta($post_id, '_loto_prediction', null),
+                'provinces' => get_provinces()
+            ];
+        }
+        wp_reset_postdata();
+    }
+
+    return rest_ensure_response($posts);
+}
+
 // Đăng ký REST API route
 function register_latest_posts_api() {
     register_rest_route('custom/v1', '/latest-posts/', array(
@@ -94,6 +121,11 @@ function register_latest_posts_api() {
     register_rest_route('custom/v1', '/provinces/', array(
         'methods'  => 'GET',
         'callback' => 'get_provinces',
+        'permission_callback' => '__return_true',
+    ));
+    register_rest_route('custom/v1', '/prediction/', array(
+        'methods'  => 'GET',
+        'callback' => 'get_prediction',
         'permission_callback' => '__return_true',
     ));
 }
