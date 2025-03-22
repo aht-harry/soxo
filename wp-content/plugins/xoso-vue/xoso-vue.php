@@ -20,6 +20,7 @@ require_once 'config.php';
 require_once 'api/list-post.php';
 require_once 'acf/post_metadata.php';
 require_once 'acf/custom_type.php';
+require_once 'acf/setup.php';
 require_once 'cawldata/admin-menu.php';
 require_once 'cawldata/cronjob.php';
 require_once 'acf/setup.php';
@@ -28,6 +29,7 @@ require_once 'acf/setup.php';
 function vue_demo_shortcode() {
     ob_start();
     ?>
+    <div id="LotteryPredictionTab"></div>
     <div id="vue-app"></div>
     <?php
     return ob_get_clean();
